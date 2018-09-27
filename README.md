@@ -1,7 +1,9 @@
 # rl-springloch
 ein Beispiel mit Reinforcement Learning.
+Der Beispiel ist ein Schachspiel und auf dem Schachbrett gibt es 3 Zeilen, 3 Spalten, insgesamt 9 Zellen.Zwei Spieler sind KI und Computer, der den Schachfigur nur zufällig bewegen kann. Jede Spieler hat nur einen Schachfigur,
 1. Installation
-  installieren pandas, numpy,matplotlib, tensorflow und tkinter.
+
+  man muss pandas, numpy,matplotlib, tensorflow und tkinter installieren.
   Für pandas, numpy und matplotlib kann man durch den Befehl "pip3 install lib-name" installieren.
   Installation der Tensorflow, dass man die Seite "https://www.tensorflow.org/install/" durchlesen kann.
   tkinter hat keine Windows-Version, Linux Nutzer führt den Befehl "apt-get install python3-tk" aus und bei Macos ist "brew       install python3-tk".
