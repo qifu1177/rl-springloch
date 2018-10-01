@@ -202,6 +202,8 @@ def update(env, rl):
             a_state = a_nextstate  # move to next state
             b_state = b_nextstate
             step_counter += 1
+
+        rl.clear_storage()
         if (win != "" and episode > TEST_MAX_EPISODES and ShowGrapie):
             env.reset()
             sum[win] += 1

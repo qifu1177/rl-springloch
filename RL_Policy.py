@@ -11,9 +11,7 @@ class Policy:
         self.lr = lr
         self.gamma = reward_decay
 
-        self.state_v = []
-        self.action_v = []
-        self.reward_v = []
+        self.reward_v, self.action_v, self.state_v = [], [], []
 
         self.build_net()
         self.sess = tf.Session()
@@ -62,6 +60,9 @@ class Policy:
         print("state=" + str(state) + "; other state=" + str(other_state) + ";action=" + str(action))
         return action
 
+    def clear_storage(self):
+        self.reward_v, self.action_v, self.state_v = [], [], []
+
 
     def lern(self):
         s_v = np.array(self.state_v)
@@ -74,7 +75,7 @@ class Policy:
         _, cost = self.sess.run([self.train_step, self.loss],
                                 feed_dict={self.states: s_v, self.act: a_v,
                                            self.tf_vt: r_v})
-        self.reward_v, self.action_v, self.state_v = [], [], []
+        self.clear_storage()
         print("loss=" + str(cost))
         # print(q_target)
         self.cost_his.append(cost)

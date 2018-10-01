@@ -1,5 +1,5 @@
 '''''
-baut eine graphische Umgebung mit Tkinter für Präsentation. Das Schachbrett besteht hat 3 Zeile und 3 Spalte.
+baut eine graphische Umgebung mit Tkinter für Präsentation. Das Schachbrett besteht hat 3 Zeilen und 3 Spalten.
 insgesamt 9 Zellen. In der Zellen gibt es 3 schwarz Rechteck, die als Schwarzloch gelten. 
 2 Spieler, A und B teilnehmen an dem Spil. A Spieler ist eine Torte in Rot und B Spieler in Gelb.
 '''''
@@ -28,6 +28,7 @@ class Game(tk.Tk, object):
         self.origin = np.array([30, 30])
         self._build()
 
+    #erstellt die Schachbrett und die 3 Löcher
     def _build(self):
         self.canvas = tk.Canvas(self, bg='white',
                                 height=Grid_H * UNIT,
@@ -73,7 +74,7 @@ class Game(tk.Tk, object):
         self.update()
         return
 
-    #bewegt den Spieler
+    #bewegt den Schachfigur
     def step(self, user, station):
         if (station != "gameover"):
             col = int(station / 10) - 1

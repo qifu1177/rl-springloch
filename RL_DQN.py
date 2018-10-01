@@ -6,37 +6,40 @@ class DQN:
     def __init__(self, actions, n_state=4, lr=0.01, epsilon=0.9, memory_size=2000, batch_size=200,
                  reward_decay=0.9, replace_target_iter=200):
         self.actions = actions
-        self.n_state = n_state
-        self.n_l1 = 400
-        self.lr = lr
+        self.n_state = n_state #die Anzahl der Eingabe, die aus zwei State besteht(eine State enthaltet ein Wert für Zeile und ein für Spalte )
+        self.n_l1 = 400 # die Anzahl der versteckter Schicht
+        self.lr = lr #Lernrate
         self.epsilon = epsilon
         self.memory_size = memory_size
         self.batch_size = batch_size
-        self.gamma = reward_decay
-        self.replace_target_iter = replace_target_iter
+        self.gamma = reward_decay #Verfallrate für Belohnung
+        self.replace_target_iter = replace_target_iter #der Intervall der Ersetzung der Parameter
         self.learn_step_counter = 0
 
-        self.memory = np.zeros((self.memory_size, self.n_state * 2 + 2))
+        self.memory = np.zeros((self.memory_size, self.n_state * 2 + 2)) #ein Speicherplatz, um die State, Aktion, Belohnung zu speichern
         self.build_net()
 
         self.q_target = tf.placeholder(tf.float32, shape=[None, len(self.actions)])
 
+        #berechnt den Wert Loss
         with tf.variable_scope('loss'):
-            # self.loss = tf.reduce_mean(
-            #    tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.q_target, logits=self.q_eval))
             self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
+        #oprtimiert den Netz
         with tf.variable_scope('train'):
             self.train_step = tf.train.AdamOptimizer(self.lr).minimize(self.loss)
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
         self.cost_his = []
 
-        t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='target_net_params')
+        #las die Parameter des Netz für nächste State aus
+        t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='next_net_params')
+        # las die Parameter des Evalution-Netz aus
         e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='eval_net_params')
-
+        # ersetzt die Parameter der Netz für nächste State mit die Parameter des Evalution-Netz
         with tf.variable_scope('soft_replacement'):
             self.target_replace_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]
 
+    #erstellt ein Neuronales Netz mit zwei Schichten
     def build_layers(self, state, c_names, w_initializer, b_initializer):
         with tf.variable_scope('l1'):
             w1 = tf.get_variable('w1', [self.n_state, self.n_l1], initializer=w_initializer, collections=c_names)
@@ -50,28 +53,31 @@ class DQN:
 
         return out
 
+    #erstellt zwei gleiche Neuronales Netz
     def build_net(self):
         self.states = tf.placeholder(tf.float32, shape=[None, self.n_state])
         w_initializer, b_initializer = tf.random_normal_initializer(0., 0.003), tf.constant_initializer(0.001)
-        # ------------------ build evaluate_net ------------------
+        # erstellt ein Neuronales Netz für Evalution
         with tf.variable_scope('eval_net'):
             c_names = ['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
             self.q_eval = self.build_layers(self.states, c_names, w_initializer, b_initializer)
 
-        # ------------------ build target_net ------------------
+        # erstellt ein Neuronales Netz für nächste State
         self.next_states = tf.placeholder(tf.float32, shape=[None, self.n_state])
-        with tf.variable_scope('target_net'):
-            c_names = ["target_net_params", tf.GraphKeys.GLOBAL_VARIABLES]
+        with tf.variable_scope('next_net'):
+            c_names = ["next_net_params", tf.GraphKeys.GLOBAL_VARIABLES]
             self.q_next = self.build_layers(self.next_states, c_names, w_initializer, b_initializer)
 
     def close(self):
         self.sess.close()
 
+    #konvertiert die State zu einer Liste
     def conver_state(self, state):
         row = (int(state / 10) - 2) / 2
         col = (state % 10 - 2) / 2
         return [row, col]
 
+    #berechnet eine Aktion mit dem Evalution-Netz
     def choose_action(self, state, other_state, islern=True):
         if ((np.random.uniform() > self.epsilon) and islern):
             return np.random.choice(self.actions)
@@ -85,6 +91,7 @@ class DQN:
             print("state=" + str(state) + "; other state=" + str(other_state) + ";action=" + str(action))
             return action
 
+    #speichert die State, Aktion und Belohnung
     def store_transition(self, state, other_state, next_s, next_other_s, action, reward):
         if (not hasattr(self, "memory_counter")):
             self.memory_counter = 0
@@ -95,6 +102,7 @@ class DQN:
         self.memory[index, :] = transition
         self.memory_counter += 1
 
+    #trainiert die Daten
     def lern(self):
         if (self.learn_step_counter % self.replace_target_iter == 0):
             self.sess.run(self.target_replace_op)
@@ -114,8 +122,7 @@ class DQN:
         q_target = q_eval.copy()
         batch_index = np.arange(self.batch_size, dtype=np.int32)
         eval_act_index = lern_v[:, self.n_state].astype(int)
-        # print("eval_act_index")
-        # print(eval_act_index)
+
         eval_reward = lern_v[:, self.n_state + 1]
 
         # print("eval_reward")

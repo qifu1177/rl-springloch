@@ -15,7 +15,9 @@ class QLearningTable:
         self.csvfn = fn
         self.init_table()
 
-    # init Q_table
+    # erstellt eine Q-Tabelle, wenn falls es keine gespeicherte Tabelle git
+    # oder ladet die Tabelle aus einer gespeicherte Tabelle
+    # die Zeilen sind State und die Spalten sind Aktion
     def init_table(self):
         if (os.path.isfile(self.csvfn)):
             self.table = pa.read_csv(self.csvfn,
@@ -25,7 +27,7 @@ class QLearningTable:
         else:
             self.table = pa.DataFrame(np.zeros((len(self.states), len(self.actions))), index=self.states,
                                       columns=self.actions)
-
+    # sucht eine Aktion, die maxmale Q-Wert hat, durch die State oder eine zufällige Aktion
     def choose_action(self, state, other_state, islern=True):
         # print(state)
         n_state = str(state) + "_" + str(other_state)
@@ -36,6 +38,7 @@ class QLearningTable:
         else:
             return state_actions.idxmax()
 
+    # aktuallisiert die Q-Tabelle mit der Belohnung
     def lern(self, state, other_state, result, next_s, next_other_s, action, reward):
         n_state = str(state) + "_" + str(other_state)
         q_predict = self.table.loc[n_state, action]
