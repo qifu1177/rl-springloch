@@ -8,7 +8,7 @@ MAX_EPISODES = 10050
 TEST_MAX_EPISODES = 10000
 MAX_ROUND = 50
 FRESH_TIME = 0.1
-ShowGrapie = True
+ShowGrapie = False
 
 
 def create_all_state():
@@ -23,7 +23,7 @@ def create_actions_table(rl):
     for a_state in States:
         for b_state in States:
             if (a_state != b_state):
-                rl.choose_action(a_state, b_state)
+                rl.choose_action(a_state, b_state,False)
 
 def get_env_feedback(player, state, other_state, action, used_actions):
     # This is how agent will interact with the environment
@@ -140,7 +140,7 @@ def update(env, rl):
         print("start...")
         for i in range(MAX_ROUND):
             # print a_state
-            a_action = rl.choose_action(a_state, b_state)
+            a_action = rl.choose_action(a_state, b_state,episode <= TEST_MAX_EPISODES)
             a_nextstate, reward, a_action, result, b_nextstate = get_env_feedback("A", a_state, b_state, a_action,
                                                                                   [])  # take action & get next state and reward
             # print("a_state: " + str(a_state) + "; action:" + a_action + "; a_nextstate: " + str(
@@ -223,5 +223,5 @@ if __name__ == '__main__':
 
     sum = update(env, rl)
     print(sum)
-    rl.plot_cost()
+    #rl.plot_cost()
     create_actions_table(rl)
